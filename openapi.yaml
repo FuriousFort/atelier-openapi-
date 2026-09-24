@@ -50,6 +50,8 @@ tags:
     description: Villes desservies et recherche de lancers. Public.
   - name: Panier
     description: Composition et paiement d'une réservation.
+  - name: Billets
+    description: Consultation des billets émis.
 
 # Sécurité par défaut : tout est protégé. Les opérations publiques
 # lèvent explicitement cette contrainte avec `security: []`.
@@ -234,20 +236,19 @@ paths:
       parameters:
         - name: q
           in: query
-          description: Filtre textuel de recherche sur le nom de la ville.
+          description: |
+            Filtre textuel de recherche sur le nom de la ville.
             Il peut être vide pour lister toute les villes, et est insensible au accents/casse.
 
             Ex )
-
-            1)  "st" --> "Strasbourg", "Saint-Étienne"
-
-            2)  " " --> "Paris", "Marseille", "Lyon", Strasbourg...
+            1) "st" --> "Strasbourg", "Saint-Étienne"
+            2) " " --> "Paris", "Marseille", "Lyon", Strasbourg...
           schema:
             type: string
         - name: limit
           in: query
-          required : false
-          description: C'est le nombre maximum de résultats 
+          required: false
+          description: C'est le nombre maximum de résultats
           schema:
             type: integer
       responses:
@@ -266,7 +267,7 @@ paths:
   #   aucun itinéraire composé. Sans lancer direct ce jour-là, la liste est vide.
   #   Opération PUBLIQUE.
 
-  trips/search:
+  /trips/search:
     post:
       tags: [Découverte]
       operationId: searchTrips
@@ -280,7 +281,7 @@ paths:
               $ref: "#/components/schemas/TripSearchRequest"
       responses:
         "200":
-          description: Liste des lancers trouvés (vide si aucun lancer direct ce jour-là).
+          description: Liste des catapultages trouvés (vide si aucun lancer direct ce jour-là).
           content:
             application/json:
               schema:
@@ -322,6 +323,10 @@ paths:
   # POST /carts
   #   Ouvrir un panier vide. C'est ici que la connexion devient nécessaire :
   #   la découverte est libre, la réservation est nominative.
+  # GET /carts
+  #   Récupérer le panier actif du voyageur connecté. Un voyageur n'a qu'un
+  #   panier actif à la fois — et parfois aucun, ce qui est un état normal
+  #   et non une erreur. Réfléchissez à ce que ça implique pour la réponse.
 
   /carts:
     post:
@@ -330,33 +335,26 @@ paths:
       summary: Ouvrir un panier vide
       description: Crée un nouveau panier au statut en attente pour le voyageur connecté.
       responses:
-        '201':
+        "201":
           description: Panier créé.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Cart'
-        '401': { $ref: '#/components/responses/Unauthorized' }
-
-
-  # GET /carts
-  #   Récupérer le panier actif du voyageur connecté. Un voyageur n'a qu'un
-  #   panier actif à la fois — et parfois aucun, ce qui est un état normal
-  #   et non une erreur. Réfléchissez à ce que ça implique pour la réponse.
-
+                $ref: "#/components/schemas/Cart"
+        "401": { $ref: "#/components/responses/Unauthorized" }
     get:
       tags: [Panier]
       operationId: getActiveCart
       summary: Récupérer son panier actif
-      description: Retourne le panier en attente du voyageur connecté, s'il en a un.
+      description: Retourne le panier en attente d'un voyageur connecté, si il y en a un.
       responses:
-        '200':
+        "200":
           description: Panier actif du voyageur (ou panier vide si aucun actif).
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Cart'
-        '401': { $ref: '#/components/responses/Unauthorized' }
+                $ref: "#/components/schemas/Cart"
+        "401": { $ref: "#/components/responses/Unauthorized" }
 
   # POST /carts/{id}/items
   #   Ajouter un lancer au panier, avec un nombre de places.
@@ -367,7 +365,7 @@ paths:
     post:
       tags: [Panier]
       operationId: addItemToCart
-      summary: Ajouter un lancer au panier
+      summary: Ajouter un lancer au panier et le nombre de place
       parameters:
         - name: id
           in: path
@@ -380,22 +378,54 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AddToCartRequest'
+              $ref: "#/components/schemas/AddToCartRequest"
       responses:
-        '200':
+        "200":
           description: Panier mis à jour avec le total recalculé.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Cart'
-        '401': { $ref: '#/components/responses/Unauthorized' }
-        '403': { $ref: '#/components/responses/Forbidden' }
-        '404': { $ref: '#/components/responses/NotFound' }
-        '422': { $ref: '#/components/responses/ValidationError' }
+                $ref: "#/components/schemas/Cart"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422": { $ref: "#/components/responses/ValidationError" }
 
   # DELETE /carts/{id}/items/{itemId}
   #   Retirer une ligne du panier. Si c'était la dernière, le panier disparaît
   #   côté serveur — le voyageur n'a rien à faire de plus.
+
+  /carts/{id}/items/{itemId}:
+    delete:
+      tags: [Panier]
+      operationId: removeItemFromCart
+      summary: Retire un billet du panier
+      description: |
+        Retirer une ligne du panier. Si c'était la dernière, le panier disparaît
+        côté serveur — le voyageur n'a rien à faire de plus.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant du panier
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          description: Identifiant de la ligne à retirer
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Panier mis à jour avec le total recalculé, ou panier vide si c'était la dernière ligne.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Cart"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
 
   # POST /carts/{id}/pay
   #   Payer le panier : il passe de `pending` à `paid` et les billets sont
@@ -404,12 +434,65 @@ paths:
   #   L'écran de confirmation doit pouvoir se peindre à partir de cette seule
   #   réponse. Que se passe-t-il si le panier est déjà payé ?
 
+  /carts/{id}/pay:
+    post:
+      tags: [Panier]
+      operationId: payCart
+      summary: Payer le panier
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Identifiant du panier
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PayCartRequest"
+      responses:
+        "200":
+          description: Panier payé et liste des billets créer.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PayCartResponse"
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: Panier déjà payé.
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+        "422": { $ref: "#/components/responses/ValidationError" }
+
   # ---- Billets (authentifié) -----------------------------------------------
 
   # GET /tickets
   #   Lister les billets du voyageur connecté. Un billet est un droit à
   #   embarquer sur un lancer : il n'est pas nominatif, il vaut pour une
   #   place et non pour une personne désignée.
+
+  /tickets:
+    get:
+      tags: [Billets]
+      operationId: getMyTickets
+      summary: Lister mes billets
+      description: Retourne tous les billets valides du voyageur connecté.
+      responses:
+        "200":
+          description: Liste des billets émis pour ce voyageur.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Ticket"
+        "401": { $ref: "#/components/responses/Unauthorized" }
 
 components:
   # ==========================================================================
@@ -649,6 +732,30 @@ components:
           type: string
           example: Strasbourg
 
+    # TripSearchRequest
+    #   Recherche de lancers entre deux villes.
+
+    TripSearchRequest:
+      type: object
+      required: [from, to, date, passengers]
+      properties:
+        from:
+          type: string
+          description: Identifiant de la ville de départ.
+          example: Paris
+        to:
+          type: string
+          description: Identifiant de la ville d'arrivée.
+          example: Lyon
+        date:
+          type: string
+          format: date
+          example: "2026-06-01"
+        passengers:
+          type: integer
+          minimum: 1
+          example: 2
+
     # TripSummary
     #   Un lancer tel qu'il apparaît dans une liste de résultats : de quoi
     #   choisir, pas de quoi préparer son voyage.
@@ -677,12 +784,12 @@ components:
           description: Prix en euros et par place.
           example: 85.00
 
-        # TripDetail
-        #   Le même lancer, consulté seul. Il ajoute ce dont on a besoin une fois
-        #   qu'on l'a choisi — notamment la franchise de masse, qui n'est pas ici
-        #   une limite commerciale mais balistique.
+    # TripDetail
+    #   Le même lancer, consulté seul. Il ajoute ce dont on a besoin une fois
+    #   qu'on l'a choisi — notamment la franchise de masse, qui n'est pas ici
+    #   une limite commerciale mais balistique.
 
-        TripDetail:
+    TripDetail:
       allOf:
         - $ref: "#/components/schemas/TripSummary"
         - type: object
@@ -697,56 +804,58 @@ components:
               example: Bali-stick-2000
             boardingInstructions:
               type: string
-              example: Arriver 15 minutes avant le tir. Protection homologuer fournit sur place
+              example: Arriver 15 minutes avant le tir. Protection homologuée fournie sur place.
 
     # Cart
     #   Un panier de réservation. Il connaît son état, ses lignes, et son total.
 
-Cart:
-    type: object
-    required: [id, status, items, total, createdAt]
-    properties:
-      id:
-      type: string
-      format: uuid
-      example: e1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d
-    status:
-      type: string
-      enum: [pending, paid]
-      example: pending
-    items:
-      type: array
-      items:
-        $ref: "#/components/schemas/CartItem"
-    total:
-      type: number
-      description: Total général calculé par l'ONTB en euros.
-      example: 170.00
-    createdAt:
-      type: string
-      format: date-time
-      example: "2026-06-01T10:15:00Z"
+    Cart:
+      type: object
+      required: [id, status, items, total, createdAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: e1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d
+        status:
+          type: string
+          enum: [pending, paid]
+          example: pending
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CartItem"
+        total:
+          type: number
+          description: Total général calculé par l'ONTB en euros.
+          example: 170.00
+        createdAt:
+          type: string
+          format: date-time
+          example: "2026-06-01T10:15:00Z"
 
-  # CartItem
-  #   Une ligne de panier : un lancer et un nombre de places.
-CartItem:
-  type: object
-  required: [id, trip, passengers, subtotal]
-  properties:
-    id:
-      type: string
-      format: uuid
-      example: 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d
-    trip:
-      $ref: "#/components/schemas/TripSummary"
-    passengers:
-      type: integer
-      minimum: 1
-      example: 2
-    subtotal:
-      type: number
-      description: Sous-total en euros pour cette ligne.
-      example: 170.00
+    # CartItem
+    #   Une ligne de panier : un lancer et un nombre de places.
+
+    CartItem:
+      type: object
+      required: [id, trip, passengers, subtotal]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d
+        trip:
+          $ref: "#/components/schemas/TripSummary"
+        passengers:
+          type: integer
+          minimum: 1
+          example: 2
+        subtotal:
+          type: number
+          description: Sous-total en euros pour cette ligne.
+          example: 170.00
+
     AddToCartRequest:
       type: object
       required: [tripId, passengers]
@@ -758,5 +867,41 @@ CartItem:
           type: integer
           minimum: 1
           example: 2
-  # Ticket
-  #   Un droit à embarquer sur un lancer, émis au paiement. Un par place.
+
+    PayCartRequest:
+      type: object
+      required: [paymentMethod]
+      properties:
+        paymentMethod:
+          type: string
+          enum: [card, voucher]
+          example: card
+
+    PayCartResponse:
+      type: object
+      required: [cart, tickets]
+      properties:
+        cart:
+          $ref: "#/components/schemas/Cart"
+        tickets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ticket"
+
+    # Ticket
+    #   Un droit à embarquer sur un lancer, émis au paiement. Un par place.
+
+    Ticket:
+      type: object
+      required: [id, trip, issuedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: 4a3b2c1d-0e9f-8a7b-6c5d-4e3f2a1b0c9d
+        trip:
+          $ref: "#/components/schemas/TripSummary"
+        issuedAt:
+          type: string
+          format: date-time
+          example: "2026-06-01T10:20:00Z"

@@ -96,3 +96,38 @@ Nous avons un projet, sur 2 jours, le premier jour nous avons rédiger le contra
 Je lui envoyer mes réponses pour vérifier et elle me corrige sans me donner directement le code, je dois soit le completer soit chercher dans les ressources qu'elle me donne. Ci je n'y arrive pas elle me donne la ligne qui bloque mais je dois principalement le faire moi même. 
 
 Une fois que cela correspond elle le valide et je le test. 
+
+
+## la ou j'ai le plus été aider par l'ia : 
+ Le  DELETE /carts/{id}/items/{itemId}
+
+ Je ne comprenais pas l'erreur 
+ ["INFO" - 14:09:36] EditorConfig support is enabled, checking for .editorconfig files
+["INFO" - 14:09:36] No local configuration (i.e. .prettierrc or .editorconfig) detected, will fall back to VS Code configuration
+
+qui été seulement dispo dans la console et rien d'afficher sur le site. 
+Donc elle me l'a entièrement réecrit et c'était en réalité un : qui manquer.. 
+
+Voici ce que l'ia à corriger et renvoyer à la fin : 
+
+Correction des indentations et préfixes d'URL (Router) :
+
+trips/search : Le chemin de l'URL n'avait pas le slash initial requis. Il a été corrigé en /trips/search.
+
+Ajout des propriétés requises par le linter Spectral :
+
+Dans PayCartRequest : Le champ paymentMethod manquait dans le tableau required.
+
+Dans Ticket : Le champ issuedAt à été ajoutés à la liste required.
+
+# Ce que je me suis rendu compte :
+
+Certain verbe avais des majuscules.. 
+
+# La ou j'ai le plus de difficulté : 
+
+les properties !
+
+
+
+
