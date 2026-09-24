@@ -738,6 +738,7 @@ components:
     TripSearchRequest:
       type: object
       required: [from, to, date, passengers]
+      description: Recherche les catapultage entre 2 villes choisis par l'utilisateur. 
       properties:
         from:
           type: string
@@ -794,6 +795,7 @@ components:
         - $ref: "#/components/schemas/TripSummary"
         - type: object
           required: [weightAllowance, catapultModel, boardingInstructions]
+          description: C'est le catapultage mais consulté seul, il ajoute ce dont on a besoin une fois qu'on l'a choisi.
           properties:
             weightAllowance:
               type: integer
@@ -812,6 +814,7 @@ components:
     Cart:
       type: object
       required: [id, status, items, total, createdAt]
+      description: Il s'agit du panier de réservation, il connaît tout de son état.
       properties:
         id:
           type: string
@@ -840,6 +843,7 @@ components:
     CartItem:
       type: object
       required: [id, trip, passengers, subtotal]
+      description: il affiche un lancer et le nombre de place. 
       properties:
         id:
           type: string
@@ -894,6 +898,7 @@ components:
     Ticket:
       type: object
       required: [id, trip, issuedAt]
+      description: il s'agit du billet émis au paiement, il y'en en a 1 par place.
       properties:
         id:
           type: string
