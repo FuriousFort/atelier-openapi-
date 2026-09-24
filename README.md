@@ -93,7 +93,7 @@ Voici ce que je lui ai envoyer en premier lieu :
 Nous avons un projet, sur 2 jours, le premier jour nous avons rédiger le contrat métier que je t'ai envoyer, aujourd'hui c'est le contrat openapi, je t'ai aussi envoyer le yaml et les consignes. j'aimerais que tu m'aide à le faire, bien sûr ne me donne pas les réponses mais guide moi 
 
 
-Je lui envoyer mes réponses pour vérifier et elle me corrige sans me donner directement le code, je dois soit le completer soit chercher dans les ressources qu'elle me donne. Ci je n'y arrive pas elle me donne la ligne qui bloque mais je dois principalement le faire moi même. 
+Je lui envoyer mes réponses pour vérifier et elle me corrige sans me donner directement le code, je dois soit le completer soit chercher dans les ressources qu'elle me donne. Ci je n'y arrive pas elle me donne la ligne qui bloque mais je dois le faire moi même. 
 
 Une fois que cela correspond elle le valide et je le test. 
 
@@ -108,7 +108,7 @@ Une fois que cela correspond elle le valide et je le test.
 qui été seulement dispo dans la console et rien d'afficher sur le site. 
 Donc elle me l'a entièrement réecrit et c'était en réalité un : qui manquer.. 
 
-Voici ce que l'ia à corriger et renvoyer à la fin : 
+# Voici ce que l'ia à corriger et renvoyer à la fin : 
 
 Correction des indentations et préfixes d'URL (Router) :
 
