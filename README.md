@@ -93,4 +93,6 @@ Voici ce que je lui ai envoyer en premier lieu :
 Nous avons un projet, sur 2 jours, le premier jour nous avons rédiger le contrat métier que je t'ai envoyer, aujourd'hui c'est le contrat openapi, je t'ai aussi envoyer le yaml et les consignes. j'aimerais que tu m'aide à le faire, bien sûr ne me donne pas les réponses mais guide moi 
 
 
-Je lui envoyer mes réponses pour vérifier et elle me corrige 
+Je lui envoyer mes réponses pour vérifier et elle me corrige sans me donner directement le code, je dois soit le completer soit chercher dans les ressources qu'elle me donne. Ci je n'y arrive pas elle me donne la ligne qui bloque mais je dois principalement le faire moi même. 
+
+Une fois que cela correspond elle le valide et je le test. 
